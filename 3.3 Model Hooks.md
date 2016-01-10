@@ -1,0 +1,66 @@
+# 模型钩子
+
+> 译者：[飞龙](https://github.com/wizardforcel)
+
+> 来源：[Model Hooks](https://github.com/dresende/node-orm2/wiki/Model-Hooks)
+
+如果你想要监听发生在模型实例上的事件，你可以附带一个函数，它会在发生时调用。
+
+现在支持下面这些事件：
+
++ `afterLoad`：（无参数）加载和准备所用实例之后；
++ `afterAutoFetch`：（无参数）自动获取关联（如果有的话）之后，无论有没有关联都会触发；
++ `beforeSave`：（无参数）尝试保存之前；
++ `afterSave`：（bool success）保存之后；
++ `beforeCreate`：（无参数）尝试保存新的实例之前（优先于`beforeSave`）；
++ `afterCreate`：（bool success）保存新的实例之后；
++ `beforeRemove`：（无参数）尝试删除实例之前；
++ `afterRemove`：（bool success）删除实例之后；
++ `beforeValidation`：（无参数）在所有验证之前，优先于`beforeCreate`和`beforeSave`。
+
+所有钩子函数调用时，`this`为对应的实例，所以你可以访问到与之相关的任何东西。
+
+对于所有`before*`钩子，你可以添加一个额外的参数到钩子函数中。这个函数用来告诉钩子应该继续执行下去还是中断。你或许已经从Express的工作流中熟悉了这一点。下面是一个示例：
+
+```
+var Person = db.define("person", {
+    name    : String,
+    surname : String
+}, {
+    hooks: {
+        beforeCreate: function (next) {
+            if (this.surname == "Doe") {
+                return next(new Error("No Does allowed"));
+            }
+            return next();
+        }
+    }
+});
+```
+
+这个工作流允许你在调用`next`之前执行异步的操作。如果你不打算使用`next`就不要把它定义为参数，否则会阻塞工作流。
+
+## 常见问题
+
+一个常见问题涉及到在钩子内部的嵌套回调中访问`this`。这个问题的原因是，`this`对象仅仅在顶级钩子函数的作用域内是有效的，而在回调中会有各种不同的值。要解决这一问题，可以创建一个对象保存`this`的引用，并且在回调中用它来访问模型的属性。
+
+**示例**
+
+```
+var Person = db.define("person", {
+    name    : String,
+    surname : String
+}, {
+    hooks: {
+        beforeCreate: function (next) {
+            var _this = this;
+            checkName(this, function(err, result)) {
+                if(err) return next(err);
+                _this.name = result.name;
+                _this.surname = result.surname;
+                next();
+            }
+        }
+    }
+});
+```

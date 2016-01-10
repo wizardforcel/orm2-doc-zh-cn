@@ -1,0 +1,94 @@
+# 模型属性
+
+> 译者：[飞龙](https://github.com/wizardforcel)
+
+> 来源：[Model Properties](https://github.com/dresende/node-orm2/wiki/Model-Properties)
+
+模型和一些关联具有一个或多个属性，每个属性有类型以及一些可选设置，你可以自行选择它们（或使用默认设置）。
+
+## 类型
+
+受支持的类型是：
+
++ `text`：文本字符串；
++ `number`：浮点数。你可以指定`size`为`2 | 4 | 8`；
++ `integer`：整数。你可以指定`size`为`2 | 4 | 8`；
++ `boolean`：`true`或`false`的值；
++ `date`：日期对象。你可以指定`time`为`true`；
++ `enum`：一个备选列表中的值；
++ `object`：JSON对象；
++ `point`：N维的点（不被广泛支持）；
++ `binary`：二进制数据；
++ `serial`：自增长的整数，用于主键。
+
+每个类型都有额外的选项。这个模型定义使用了它们中的绝大多数：
+
+```
+var Person = db.define("person", {
+    name    : { type: "text", size: 50 },
+    surname : { type: "text", defaultValue: "Doe" },
+    male    : { type: "boolean" },
+    vat     : { type: "integer", unique: true },
+    country : { type: "enum", values: [ "USA", "Canada", "Rest of the World" ] },
+    birth   : { type: "date", time: false }
+});
+```
+
+所有类型都支持`required`（布尔值），`unique`（布尔值）和`defaultValue`（文本）。文本类型也支持最大尺寸（数值）和`big`（布尔值，用于非常长的字符串）。数值类型是浮点数，支持`size`（数值，字节大小）和`unsigned`（布尔值）。日期类型支持`time`（布尔值）。
+
+**要注意8字节的数值[有其局限性](http://stackoverflow.com/questions/307179/what-is-javascripts-max-int-whats-the-highest-integer-value-a-number-can-go-t)。**
+
+如果你打算用默认选项，你可以使用原生类型来指定属性类型：
+
+```
+var Person = db.define("person", {
+    name    : String,
+    male    : Boolean,
+    vat     : Number, // FLOAT
+    birth   : Date,
+    country : [ "USA", "Canada", "Rest of the World" ],
+    meta    : Object, // JSON
+    photo   : Buffer  // binary
+});
+```
+
+## 将ORM字段映射到不同名称的数据库列中
+
+```
+var Person = db.define("person", {
+    name    : { type: 'text', mapsTo: 'fullname' }
+});
+```
+
+ORM属性`name`映射`person`表的`fullname`列。
+
+## 自定义类型
+
+你可以向ORM添加你自己的类型，像这样：
+
+```
+db.defineType('numberArray', {
+  datastoreType: function(prop) {
+    return 'TEXT'
+  },
+  // This is optional
+  valueToProperty: function(value, prop) {
+    if (Array.isArray(value)) {
+      return value;
+    } else {
+      return value.split(',').map(function (v) {
+        return Number(v);
+      });
+    }
+  },
+  // This is also optional
+  propertyToValue: function(value, prop) {
+    return value.join(',')
+  }
+});
+var LottoTicket = db.define('lotto_ticket', {
+  numbers: { type: 'numberArray' }
+});
+```
+
+一些可用的高级自定义类型，能够让你像 PostGIS 那样使用模型。请见[这个 spec](https://github.com/dresende/node-orm2/blob/master/test/integration/property-custom.js) 。
