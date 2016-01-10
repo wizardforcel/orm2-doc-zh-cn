@@ -1,0 +1,57 @@
+# hasOne（多对一关系）
+
+> 译者：[飞龙](https://github.com/wizardforcel)
+
+> 来源：[hasOne](https://github.com/dresende/node-orm2/wiki/hasOne)
+
+hasOne关联是一种多对一的关系，意思是你定义的模型可以有多个实例指向一个其它的实例（所属相同模型或不同模型）。
+
+## 用法
+
+```
+Animal.hasOne(association_name [, association_model [, options ] ]);
+```
+
+## 描述
+
++ `association_name`是两个模型之间的关系名称‘
++ `association_model`是要关联的另一个模型（如果没有定义，假设为同一个模型，大多数情况下这可能不是你想要的）；
++ `options`是一个对象，拥有一些和关联有关的，你可以调整的属性，比如自动获取，再比如表（SQL中）或者集合（MongoDB中）的名称。
+
+## 示例
+
+```
+Animal.hasOne("owner", Person);
+```
+
+在背后，这条语句意思是`Animal`集合拥有一个属性`owner_id`（这个名称可以通过选项来修改，`{field: 'ownerid'}`），它会指向`Person`集合的某个人。如果关联并不是必须的，则可以为空。
+
+这个关联也会创建一些额外的便利方法（叫做关联访问器）来帮助你管理它。访问器的名称也可以修改（同上，在选项里面），默认情况下，它们会拥有和关联名称相似的名称。例如，下面的代码展示了可以做类似这样的事情：
+
+```
+// assuming John is a Person..
+Animal.find({ name: "Deco" }).first(function (err, Deco) {
+    Deco.setOwner(John, function (err) {
+        // John is now the owner of Deco
+    });
+});
+```
+
+其它的访问器：
+
++ `getOwner(callback)` - 获取关联的所有者
++ `hasOwner(callback)` - （在回调中）返回这个动物是否拥有所有者
++ `removeOwner(callback)` - 移除和所有者的关联关系（如果存在的话）
+
+## 关联反转
+
+有时你希望通过对面的模型来访问关联。在上面的例子中，是通过`Person`。你可以向关联传递一个选项来实现它。
+
+```
+Animal.hasOne('owner', Person, { reverse: "pets" });
+```
+
+之后，每个`person`实例都有有两个便利方法：
+
++ `getPets(callback)` - 获取所有和这个人有关联的动物
++ `setPets(cat, dog, callback)` - 移除所有和这个人有关联的动物，并且添加猫和狗
