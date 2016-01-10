@@ -1,0 +1,39 @@
+# 聚合
+
+> 译者：[飞龙](https://github.com/wizardforcel)
+
+> 来源：[Aggregation](https://github.com/dresende/node-orm2/wiki/Aggregation)
+
+如果你需要从一个模型中获取一些聚合值，你可以使用`Model.aggregate()`。下面通过一个例子来展示：
+
+```
+Person.aggregate({ surname: "Doe" }).min("age").max("age").get(function (err, min, max) {
+    console.log("The youngest Doe guy has %d years, while the oldest is %d", min, max);
+});
+```
+
+可以传递一个含有属性的`Array`来选择仅仅保留一小部分属性。方法也会接收一个`Object`来定义条件。
+
+下面是一个展示如何使用`.groupBy()`的例子：
+
+```
+// 和 "select avg(weight), age from person where country='someCountry' group by age;" 相同
+Person.aggregate(["age"], { country: "someCountry" }).avg("weight").groupBy("age").get(function (err, stats) {
+    // stats 是一个数组，每个记录都有 'age' 和 'avg_weight' 属性
+});
+```
+
+## 基本的 `.aggregate()` 方法
+
++ `limit()`：你可以传递一个数值作为个数，或者两个数值分别作为偏移和个数
++ `order()`：和`Model.find().order()`相同
+
+## 额外的 `.aggregate()` 方法
+
++ `min`
++ `max`
++ `avg`
++ `sum`
++ `count`（它有一个快捷方式 - `Model.count`）
+
+有更多的聚合函数是依赖于驱动的（比如数学函数）。

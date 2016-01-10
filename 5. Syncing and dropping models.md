@@ -1,0 +1,35 @@
+# 同步和删除模型
+
+> 译者：[飞龙](https://github.com/wizardforcel)
+
+> 来源：[Syncing and dropping models](https://github.com/dresende/node-orm2/wiki/Syncing-and-dropping-models)
+
+同步是一项功能方法，可以在数据库里为你的模型和关联创建所需的表来工作。现存的表并不会被替换，它们只会在不存在的时候被创建。
+
+同步有两种方式：
+
+1. 调用`Model.sync(cb)`会仅仅同步指定模型
+2. 调用`db.sync(cb)`会同步所有模型
+
+删除是一个类似的方法，但是它会删掉你模型涉及的所有表，即使不是ORM创建的。删除也有两种方式。
+
+```
+var orm = require("orm");
+
+orm.connect("....", function (err, db) {
+    var Person = db.define("person", {
+        name : String
+    });
+    var Pet = db.define("pet", {
+        name : String
+    });
+
+    db.drop(function () {
+        // 从指定模型中删除所有表（Person和Pet）
+
+        Person.sync(function () {
+            // 为Person模型创建表
+        });
+    });
+});
+```

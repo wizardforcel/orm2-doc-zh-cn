@@ -1,0 +1,33 @@
+# 创建和更新记录
+
+> 译者：[飞龙](https://github.com/wizardforcel)
+
+> 来源：[Creating and Updating Items](https://github.com/dresende/node-orm2/wiki/Creating-and-Updating-Items)
+
+## 创建
+
+
+```
+var newRecord = {};
+newRecord.id = 1;
+newRecord.name = "John"
+Person.create(newRecord, function(err, results) {
+ ...
+});
+```
+
+## 保存
+
+```
+Person.find({ surname: "Doe" }, function (err, people) {
+    // SQL: "SELECT * FROM person WHERE surname = 'Doe'"
+
+    console.log("People found: %d", people.length);
+    console.log("First person: %s, age %d", people[0].fullName(), people[0].age);
+
+    people[0].age = 16;
+    people[0].save(function (err) {
+        // err.msg = "under-age";
+    });
+});
+```

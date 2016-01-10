@@ -1,0 +1,23 @@
+# extendsTo（一对一关系）
+
+> 译者：[飞龙](https://github.com/wizardforcel)
+
+> 来源：[extendsTo](https://github.com/dresende/node-orm2/wiki/extendsTo)
+
+你可能想把可选的属性分割到另一个表中。每个扩展都会是一个新的表，其中每一行的唯一标识符是主模型实例的id。
+
+例如：
+
+```
+var Person = db.define("person", {
+    name : String
+});
+var PersonAddress = Person.extendsTo("address", {
+    street : String,
+    number : Number
+});
+```
+
+这样会创建`person`表，带有`id`和`name`列。扩展行为会创建`person_address`表，带有`person_id`，`street`和`number`列。`Person`模型中可用的方法类似于`hasOne`关联。这个例子中，你可以调用`.getAddress(cb)`，`.setAddress(Address, cb)`以及其他。
+
+**注意**：你并不需要保存`Person.extendsTo`的返回值，它返回了一个扩展模型。你可以使用它来直接查询扩展表（甚至查找相关的模型），但是这完全取决于你。如果你只希望通过原模型来访问它的话，可以丢弃返回值。

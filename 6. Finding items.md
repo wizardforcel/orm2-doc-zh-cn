@@ -1,0 +1,99 @@
+# 查找记录
+
+> 译者：[飞龙](https://github.com/wizardforcel)
+
+> 来源：[Finding items](https://github.com/dresende/node-orm2/wiki/Finding-items)
+
+## `find`
+
+查找匹配标准的记录，可以链式查询（见下文）：
+
+```
+Person.find({status:'active'}, function(err, results) {
+  // ...
+});
+```
+
+你也可以限制结果的个数，这条语句限制结果为10个：
+
+```
+Person.find({status:'active'}, 10, function(err, results) {
+  // ...
+});
+```
+
+`Person.all`是`Person.find`的别名。
+
+## `get`
+
+通过主键来查找记录。
+
+```
+Person.get(1, function(err, person) {
+  // ...
+});
+```
+
+## `one`
+
+只查找一个记录，和`find`的语法相似。
+
+```
+Person.one({status:'active'}, function(err, person) {
+  // ...
+});
+```
+
+## `count`
+
+获取所匹配记录的数量。
+
+```
+Person.count({status:'active'}, function(err, activePeopleCount) {
+  // ...
+});
+```
+
+## `exists`
+
+测试匹配你的条件的记录是否存在。
+
+```
+Person.exists({id:1, status:'active'}, function(err, personIsActive) {
+  // ...
+});
+```
+
+## 过滤和排序
+
+我们接受两个对象来执行过滤（第一个）和聚合（第二个）。聚合对象接受`limit`，`order`和`groupBy`。
+
+https://github.com/dresende/node-orm2/blob/v2.1.20/lib/AggregateFunctions.js#L36
+
+```
+Person.find({status:'active'}, {limit:10}, function(err, res) {
+
+});
+```
+
+## `find`/`count`/`one` 等方法的条件查询
+
+所有以逗号分隔的键值对在查询中都会以`AND`连接。你可以把逻辑运算符放在一系列条件的前面。
+
+```
+Person.find({or:[{col1: 1}, {col2: 2}]}, function(err, res) {
+  // res 为 col1 == 1 或者 col2 == 2 的 Person
+});
+```
+
+## 使用`IN`来查找
+
+`sql-query`（取决于SQL引擎）会自动将数组视为基于`IN`的查询。
+
+https://github.com/dresende/node-sql-query/blob/v0.1.23/lib/Where.js#L172
+
+```
+Person.find({id: [1, 2]}, function(err, persons) {
+  // 查找 id 是 1 或者 2 的 Person （例如 WHERE id IN (1, 2) ）
+});
+```
